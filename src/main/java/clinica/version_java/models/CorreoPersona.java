@@ -42,4 +42,13 @@ public class CorreoPersona {
     @JoinColumn(name="persona_id", referencedColumnName = "id_persona")
     private Persona persona;
 
+
+    public CorreoPersona(String correo, Persona persona) {
+        this.correo = correo;
+        this.persona = persona;
+    }
+
+
+
+
 }

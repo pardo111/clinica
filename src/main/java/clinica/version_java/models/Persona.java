@@ -23,6 +23,8 @@ import clinica.version_java.models.enums.Estado;
 import clinica.version_java.models.enums.Sexo;
 import clinica.version_java.models.enums.TipoPersona;
 import jakarta.persistence.Column;
+import clinica.version_java.DTO.DTOAntecedentesFamiliares;
+import clinica.version_java.DTO.DTOPersona;
 
 import lombok.Data;
 
@@ -82,4 +84,47 @@ public class Persona {
     private List<Citas> paciente;
     @OneToMany(mappedBy = "medico")
     private List<Citas> medico;
+
+
+
+
+
+
+    public Persona(Persona persona) {
+        this.nombres = persona.nombres;
+        this.apellidos = persona.apellidos;
+        this.fechaNacimiento = persona.fechaNacimiento;
+        this.direccion = persona.direccion;
+        this.sexo = persona.sexo;
+        this.dui = persona.dui;
+        this.tipoPersona = persona.tipoPersona;
+        this.correoPersona = persona.correoPersona;
+        this.telefonoPersona = persona.telefonoPersona;
+        this.contacto = persona.contacto;
+    }
+
+    public Persona(DTOPersona persona) {
+        this.nombres = persona.nombres;
+        this.apellidos = persona.apellidos;
+        this.fechaNacimiento = persona.fechaNacimiento;
+        this.direccion = persona.direccion;
+        this.sexo = persona.sexo;
+        this.dui = persona.dui;
+        this.tipoPersona = persona.tipoPersona;
+    }
+
+    public Persona(DTOAntecedentesFamiliares antecedente) {
+        this.idPersona = antecedente.idPersona;
+        this.nombres = antecedente.nombres;
+        this.apellidos = antecedente.apellidos;
+        this.fechaNacimiento = antecedente.fechaNacimiento;
+        this.direccion = antecedente.direccion;
+        this.estado = antecedente.estado;
+        this.sexo = antecedente.sexo;
+        this.dui = antecedente.dui;
+        this.tipoPersona = antecedente.tipoPersona;
+    }
+
+    
+    
 }

@@ -35,4 +35,14 @@ public class ContactoEmergencia {
     @JoinColumn(name="id_contacto", referencedColumnName = "id_persona")
     private Persona contacto;
 
+    
+    public ContactoEmergencia(Relacion relacion, Persona paciente, Persona contacto) {
+        this.relacion = relacion;
+        this.paciente = paciente;
+        this.contacto = contacto;
+    }
+
+
+
+    
 }

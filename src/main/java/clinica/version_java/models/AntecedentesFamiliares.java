@@ -9,7 +9,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 @Entity
 @Table(name = "antecedentes_familiares")
 @Data
@@ -30,4 +32,13 @@ public class AntecedentesFamiliares {
     @ManyToOne
     @JoinColumn(name = "id_familiar", referencedColumnName = "id_persona")
     private Persona familiar;
+
+
+    public AntecedentesFamiliares(String antecedentes, Persona paciente, Persona familiar) {
+        this.antecedentes = antecedentes;
+        this.paciente = paciente;
+        this.familiar = familiar;
+    }
+
+    
 }

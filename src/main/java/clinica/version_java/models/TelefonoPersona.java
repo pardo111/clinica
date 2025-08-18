@@ -38,4 +38,11 @@ public class TelefonoPersona {
     @ManyToOne
     @JoinColumn(name = "persona_id", referencedColumnName = "id_persona")
     private Persona persona;
+
+    public TelefonoPersona(String telefono, Persona persona) {
+        this.telefono = telefono;
+        this.persona = persona;
+    }
+
+    
 }
