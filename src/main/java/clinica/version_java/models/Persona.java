@@ -49,9 +49,9 @@ public class Persona {
     @Column(name="estado")
     private Estado estado= Estado.ACTIVO;
     @Enumerated(EnumType.STRING)
-    @Column(name = "sexo")
+    @Column(name = "sexo", nullable =  false)
     private Sexo sexo ;
-    @Column(name = "dui", length = 10 , nullable = false)
+    @Column(name = "dui", length = 10 , nullable = false, unique = true)
     private String dui;
     @Enumerated(EnumType.STRING)
     @Column(name= "tipo")
@@ -61,9 +61,6 @@ public class Persona {
     private LocalDateTime fechaCreacion;
     @UpdateTimestamp
     private LocalDateTime fechaActualizacion;
-
-    
-
 
     //RELACIONES
     @OneToMany(mappedBy = "persona")

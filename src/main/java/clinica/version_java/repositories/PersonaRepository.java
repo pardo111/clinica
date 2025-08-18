@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import clinica.version_java.models.Persona;
-import java.util.List;
 import clinica.version_java.models.enums.Estado;
 import clinica.version_java.models.enums.Sexo;
 import clinica.version_java.models.enums.TipoPersona;
@@ -22,6 +21,8 @@ public interface PersonaRepository extends JpaRepository<Persona, Integer>{
     Page<Persona> findByNombres(String nombres, Pageable pageable);
     Page<Persona> findByNombresContaining(String nombres, Pageable pageable);
     Page<Persona> findByDui(String dui, Pageable pageable);
+    Persona findByDui(String dui);
+    boolean existsByDui(String dui);
     Page<Persona> findByDuiContaining(String dui, Pageable pageable);
     Page<Persona> findByEstado(Estado estado, Pageable pageable);
     Page<Persona> findBySexo(Sexo sexo, Pageable pageable);

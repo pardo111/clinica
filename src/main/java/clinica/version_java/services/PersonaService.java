@@ -39,6 +39,7 @@ public class PersonaService {
         this.antecedentesFamiliaresRepository = antecedentesFamiliaresRepository;
     }
 
+    // metodo para ingresar nueva persona en general
     @Transactional(rollbackFor = Exception.class)
     public DTOPersona create(DTOPersona persona) {
 
@@ -51,8 +52,9 @@ public class PersonaService {
         personaNueva.contactosEmergencia = procesarLista(persona.contactosEmergencia,
                 this::salvaDatosGeneralesPersona);
 
-
-
+        // recorro las listas de personas contacto o antecedentes para guardarlas en sus
+        // respectivas tablas
+        // quiza pueda hacer este bloque mas limpio luego...
         Optional.ofNullable(persona.antecedentesFamiliares)
                 .orElse(List.of())
                 .forEach(dto -> {
@@ -60,7 +62,7 @@ public class PersonaService {
                             .orElse(new Persona(dto));
 
                     Persona paciente = personaRepository.findById(personaNueva.idPersona)
-                                                        .orElse(new Persona(personaNueva));
+                            .orElse(new Persona(personaNueva));
                     antecedentesFamiliaresRepository.save(
                             new AntecedentesFamiliares(dto.antecedentes, paciente, familiar));
                 });
@@ -72,7 +74,7 @@ public class PersonaService {
                             .orElse(new Persona(dto));
 
                     Persona principal = personaRepository.findById(personaNueva.idPersona)
-                                                        .orElse(new Persona(personaNueva));
+                            .orElse(new Persona(personaNueva));
                     contactoEmergenciaRepository.save(
                             new ContactoEmergencia(dto.relacion, principal, contacto));
                 });
@@ -81,25 +83,31 @@ public class PersonaService {
     }
 
     private <T extends DTOPersona> T salvaDatosGeneralesPersona(T persona) {
-        Persona personaNueva = personaRepository.save(new Persona(persona));
 
-        List<String> correos = new ArrayList<>();
-        List<String> telefonos = new ArrayList<>();
-        if (persona.correos != null) {
-            for (String correo : persona.correos) {
-                CorreoPersona correoPersona = correoPersonaRepository.save(new CorreoPersona(correo, personaNueva));
-                correos.add(correoPersona.getCorreo());
+        Persona personaNueva;
+        if (!personaRepository.existsByDui(persona.dui)) {
+            personaNueva = personaRepository.save(new Persona(persona));
+
+            List<String> correos = new ArrayList<>();
+            List<String> telefonos = new ArrayList<>();
+            if (persona.correos != null) {
+                for (String correo : persona.correos) {
+                    CorreoPersona correoPersona = correoPersonaRepository.save(new CorreoPersona(correo, personaNueva));
+                    correos.add(correoPersona.getCorreo());
+                }
             }
-        }
 
-        if (persona.telefonos != null) {
-            for (String telefono : persona.telefonos) {
-                TelefonoPersona telefonoPersona = telefonoPersonaRepository
-                        .save(new TelefonoPersona(telefono, personaNueva));
-                telefonos.add(telefonoPersona.getTelefono());
+            if (persona.telefonos != null) {
+                for (String telefono : persona.telefonos) {
+                    TelefonoPersona telefonoPersona = telefonoPersonaRepository
+                            .save(new TelefonoPersona(telefono, personaNueva));
+                    telefonos.add(telefonoPersona.getTelefono());
+                }
             }
-        }
 
+        } else {
+            personaNueva = personaRepository.findByDui(persona.dui);
+        }
         persona.idPersona = personaNueva.getIdPersona();
         persona.nombres = personaNueva.getNombres();
         persona.apellidos = personaNueva.getApellidos();
@@ -109,6 +117,7 @@ public class PersonaService {
         persona.sexo = personaNueva.getSexo();
         persona.dui = personaNueva.getDui();
         persona.tipoPersona = personaNueva.getTipoPersona();
+
         return persona;
     }
 
