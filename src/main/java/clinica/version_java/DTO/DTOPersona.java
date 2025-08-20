@@ -103,4 +103,16 @@ public class DTOPersona {
         this.contactosEmergencia = persona.contactosEmergencia;
         }
 
+        public DTOPersona(Persona persona) {
+    this.idPersona = persona.getIdPersona();
+    this.nombres = persona.getNombres();
+    this.apellidos = persona.getApellidos();
+    this.fechaNacimiento = persona.getFechaNacimiento();
+    this.direccion = persona.getDireccion();
+    this.estado = persona.getEstado();
+    this.sexo = persona.getSexo();
+    this.dui = persona.getDui();
+    this.tipoPersona = persona.getTipoPersona();
+}
+
 }
