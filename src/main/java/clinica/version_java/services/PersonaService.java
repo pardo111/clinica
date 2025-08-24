@@ -2,9 +2,6 @@ package clinica.version_java.services;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +20,7 @@ import clinica.version_java.repositories.ContactoEmergenciaRepository;
 import clinica.version_java.repositories.CorreoPersonaRepository;
 import clinica.version_java.repositories.PersonaRepository;
 import clinica.version_java.repositories.TelefonoPersonaRepository;
+import clinica.version_java.utils.PersonaUtils;
 
 @Service
 public class PersonaService {
@@ -33,6 +31,7 @@ public class PersonaService {
         private ContactoEmergenciaRepository contactoEmergenciaRepository;
         private AntecedentesFamiliaresRepository antecedentesFamiliaresRepository;
 
+        // contructor que inyecta las dependencias de los repositorios
         public PersonaService(PersonaRepository personaRepository, TelefonoPersonaRepository telefonoPersonaRepository,
                         CorreoPersonaRepository correoPersonaRepository,
                         ContactoEmergenciaRepository contactoEmergenciaRepository,
@@ -44,98 +43,8 @@ public class PersonaService {
                 this.antecedentesFamiliaresRepository = antecedentesFamiliaresRepository;
         }
 
-        // metodo para ingresar nueva persona en general
-        @Transactional(rollbackFor = Exception.class)
-        public DTOPersona create(DTOPersona persona) {
-
-                // guardo a la persona principal
-                DTOPersona personaNueva = salvaDatosGeneralesPersona(persona);
-
-                // guardo a los antecedentes y/o contactos familiares
-                personaNueva.antecedentesFamiliares = procesarLista(persona.antecedentesFamiliares,
-                                this::salvaDatosGeneralesPersona);
-                personaNueva.contactosEmergencia = procesarLista(persona.contactosEmergencia,
-                                this::salvaDatosGeneralesPersona);
-
-                // recorro las listas de personas contacto o antecedentes para guardarlas en sus
-                // respectivas tablas
-                // quiza pueda hacer este bloque mas limpio luego...
-                Optional.ofNullable(persona.antecedentesFamiliares)
-                                .orElse(List.of())
-                                .forEach(dto -> {
-                                        Persona familiar = personaRepository.findById(dto.idPersona)
-                                                        .orElse(new Persona(dto));
-
-                                        Persona paciente = personaRepository.findById(personaNueva.idPersona)
-                                                        .orElse(new Persona(personaNueva));
-                                        antecedentesFamiliaresRepository.save(
-                                                        new AntecedentesFamiliares(dto.antecedentes, paciente,
-                                                                        familiar));
-                                });
-
-                Optional.ofNullable(persona.contactosEmergencia)
-                                .orElse(List.of())
-                                .forEach(dto -> {
-                                        Persona contacto = personaRepository.findById(dto.idPersona)
-                                                        .orElse(new Persona(dto));
-
-                                        Persona principal = personaRepository.findById(personaNueva.idPersona)
-                                                        .orElse(new Persona(personaNueva));
-                                        contactoEmergenciaRepository.save(
-                                                        new ContactoEmergencia(dto.relacion, principal, contacto));
-                                });
-
-                return personaNueva;
-        }
-
-        private <T extends DTOPersona> T salvaDatosGeneralesPersona(T persona) {
-
-                Persona personaNueva;
-                if (!personaRepository.existsByDui(persona.dui)) {
-                        personaNueva = personaRepository.save(new Persona(persona));
-
-                        List<String> correos = new ArrayList<>();
-                        List<String> telefonos = new ArrayList<>();
-                        if (persona.correos != null) {
-                                for (String correo : persona.correos) {
-                                        CorreoPersona correoPersona = correoPersonaRepository
-                                                        .save(new CorreoPersona(correo, personaNueva));
-                                        correos.add(correoPersona.getCorreo());
-                                }
-                        }
-
-                        if (persona.telefonos != null) {
-                                for (String telefono : persona.telefonos) {
-                                        TelefonoPersona telefonoPersona = telefonoPersonaRepository
-                                                        .save(new TelefonoPersona(telefono, personaNueva));
-                                        telefonos.add(telefonoPersona.getTelefono());
-                                }
-                        }
-
-                } else {
-                        personaNueva = personaRepository.findByDui(persona.dui);
-                }
-                persona.idPersona = personaNueva.getIdPersona();
-                persona.nombres = personaNueva.getNombres();
-                persona.apellidos = personaNueva.getApellidos();
-                persona.fechaNacimiento = personaNueva.getFechaNacimiento();
-                persona.direccion = personaNueva.getDireccion();
-                persona.estado = personaNueva.getEstado();
-                persona.sexo = personaNueva.getSexo();
-                persona.dui = personaNueva.getDui();
-                persona.tipoPersona = personaNueva.getTipoPersona();
-
-                return persona;
-        }
-
-        private <E extends DTOPersona> List<E> procesarLista(List<E> lista, Function<E, E> metodo) {
-                return Optional.ofNullable(lista)
-                                .orElse(List.of())
-                                .stream()
-                                .map(metodo)
-                                .toList();
-        }
-
+        // metodo para obtener todas las personas en formato DTO
+        @Transactional(readOnly = true)
         public List<DTOPersona> getAll() {
                 return personaRepository.findAll()
                                 .stream()
@@ -143,9 +52,73 @@ public class PersonaService {
                                 .toList();
         }
 
+        // metodo para obtener una pagina de personas en formato DTO
+        @Transactional(readOnly = true)
         public Page<DTOPersona> getPage(int page, int size, String sort) {
                 Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
                 return personaRepository.findAll(pageable)
                                 .map(DTOPersona::new);
         }
+
+        // metodo para ingresar nueva persona en general usando la capa de DTO
+        // tablas afectadas: persona, telefono_persona, correo_persona,
+        // contacto_emergencia, antecedentes_familiares
+        @Transactional(rollbackFor = Exception.class)
+        public DTOPersona crearPersonaCompleta(DTOPersona DTOpersona) {
+                DTOPersona personaNueva = guardarDatosPersona(DTOpersona);
+                Persona persona = personaRepository.findByDui(personaNueva.dui);
+
+                DTOpersona.antecedentesFamiliares = PersonaUtils.procesarLista(DTOpersona.antecedentesFamiliares,
+                                DTOantecedente -> {
+                                        guardarDatosPersona(DTOantecedente);
+                                        Persona AntecedenteFamiliar = personaRepository.findByDui(DTOantecedente.dui);
+                                        antecedentesFamiliaresRepository.save(
+                                                        new AntecedentesFamiliares(DTOantecedente.antecedentes,
+                                                                        AntecedenteFamiliar, persona));
+                                        return DTOantecedente;
+                                });
+
+                DTOpersona.contactosEmergencia = PersonaUtils.procesarLista(DTOpersona.contactosEmergencia,
+                                DTOcontacto -> {
+                                        guardarDatosPersona(DTOcontacto);
+                                        Persona contactosEmergencia = personaRepository.findByDui(DTOcontacto.dui);
+
+                                        contactoEmergenciaRepository.save(
+                                                        new ContactoEmergencia(DTOcontacto.relacion,
+                                                                        contactosEmergencia, persona));
+                                        return DTOcontacto;
+                                });
+                return DTOpersona;
+        }
+
+        // metodo privado para guardar los datos basicos de una persona y sus telefonos
+        // y correos
+        // tablas efectadas: persona, telefono_persona, correo_persona
+        private <T extends DTOPersona> T guardarDatosPersona(T dto) {
+                try {
+                        Persona persona = personaRepository.existsByDui(dto.dui) ? 
+                                          personaRepository.findByDui(dto.dui)
+                                        : personaRepository.save(new Persona(dto));
+                        DTOPersona personaNueva = new DTOPersona(persona);
+
+                        List<String> correos = new ArrayList<>();
+                        List<String> telefonos = new ArrayList<>();
+                        if (dto.correos != null)
+                                correos = PersonaUtils.procesarLista(dto.correos,
+                                                correo -> correoPersonaRepository
+                                                                .save(new CorreoPersona(correo, persona))
+                                                                .getCorreo());
+                        if (dto.telefonos != null)
+                                telefonos = PersonaUtils.procesarLista(dto.telefonos,
+                                                telefono -> telefonoPersonaRepository.save(
+                                                                new TelefonoPersona(telefono, persona))
+                                                                .getTelefono());
+
+                        return (T) personaNueva;
+                } catch (Exception e) {
+                        System.out.println("\n\n\n\n\n\n\n error guardarDatosPersona : " + e.getMessage());
+                        throw e;
+                }
+        }
+
 }

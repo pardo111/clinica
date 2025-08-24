@@ -28,7 +28,7 @@ public class CorreoPersona {
     @Column(name="id_correo_persona")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idCorreoPersona;
-    @Column(name="correo", nullable = false)
+    @Column(name="correo", nullable = false, unique = true)
     private String correo;
     @Column(name = "estado")
     @Enumerated(EnumType.STRING)

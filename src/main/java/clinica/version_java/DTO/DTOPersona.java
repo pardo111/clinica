@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import clinica.version_java.models.Persona;
 import clinica.version_java.models.enums.Estado;
 import clinica.version_java.models.enums.Sexo;
@@ -13,7 +12,6 @@ import clinica.version_java.models.enums.TipoPersona;
 import jakarta.validation.constraints.NotBlank;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-
 
 @ToString
 @NoArgsConstructor
@@ -34,21 +32,17 @@ public class DTOPersona {
     @NotBlank
     public TipoPersona tipoPersona;
 
-
     public List<DTOContactoEmergencia> contactosEmergencia = new ArrayList<>();
     public List<String> correos = new ArrayList<>();
     public List<String> telefonos = new ArrayList<>();
     public List<DTOAntecedentesFamiliares> antecedentesFamiliares = new ArrayList<>();
 
-
-
     public DTOPersona(
-        Persona persona,
-        List<String> correos,
-        List<String> telefonos,
-        List<DTOContactoEmergencia> contactosEmergencia,
-        List<DTOAntecedentesFamiliares> antecedentesFamiliares
-        ) {
+            Persona persona,
+            List<String> correos,
+            List<String> telefonos,
+            List<DTOContactoEmergencia> contactosEmergencia,
+            List<DTOAntecedentesFamiliares> antecedentesFamiliares) {
         this.idPersona = persona.getIdPersona();
         this.nombres = persona.getNombres();
         this.apellidos = persona.getApellidos();
@@ -64,14 +58,10 @@ public class DTOPersona {
         this.contactosEmergencia = contactosEmergencia;
     }
 
-
-    
-
     public DTOPersona(
-        Persona persona,
-        List<String> correos,
-        List<String> telefonos
-        ) {
+            Persona persona,
+            List<String> correos,
+            List<String> telefonos) {
         this.idPersona = persona.getIdPersona();
         this.nombres = persona.getNombres();
         this.apellidos = persona.getApellidos();
@@ -86,8 +76,7 @@ public class DTOPersona {
     }
 
     public DTOPersona(
-        DTOPersona persona
-        ) {
+            DTOPersona persona) {
         this.idPersona = persona.idPersona;
         this.nombres = persona.nombres;
         this.apellidos = persona.apellidos;
@@ -99,20 +88,24 @@ public class DTOPersona {
         this.tipoPersona = persona.tipoPersona;
         this.correos = persona.correos;
         this.telefonos = persona.telefonos;
-        this.antecedentesFamiliares = persona.antecedentesFamiliares;
-        this.contactosEmergencia = persona.contactosEmergencia;
+        if (persona.antecedentesFamiliares != null) {
+            this.antecedentesFamiliares = new ArrayList<>(persona.antecedentesFamiliares);
         }
+        if (persona.contactosEmergencia != null) {
+            this.contactosEmergencia = new ArrayList<>(persona.contactosEmergencia);
+        }
+    }
 
-        public DTOPersona(Persona persona) {
-    this.idPersona = persona.getIdPersona();
-    this.nombres = persona.getNombres();
-    this.apellidos = persona.getApellidos();
-    this.fechaNacimiento = persona.getFechaNacimiento();
-    this.direccion = persona.getDireccion();
-    this.estado = persona.getEstado();
-    this.sexo = persona.getSexo();
-    this.dui = persona.getDui();
-    this.tipoPersona = persona.getTipoPersona();
-}
+    public DTOPersona(Persona persona) {
+        this.idPersona = persona.getIdPersona();
+        this.nombres = persona.getNombres();
+        this.apellidos = persona.getApellidos();
+        this.fechaNacimiento = persona.getFechaNacimiento();
+        this.direccion = persona.getDireccion();
+        this.estado = persona.getEstado();
+        this.sexo = persona.getSexo();
+        this.dui = persona.getDui();
+        this.tipoPersona = persona.getTipoPersona();
+    }
 
 }

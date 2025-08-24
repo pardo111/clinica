@@ -27,7 +27,7 @@ public class PersonaController {
    public ResponseEntity<?> create(@RequestBody DTOPersona persona) {
 
       try {
-         DTOPersona personaNueva = personaService.create(persona);
+         DTOPersona personaNueva = personaService.crearPersonaCompleta(persona);
          System.out.println(personaNueva);
          return ResponseEntity.status(HttpStatus.OK)
                               .body(personaNueva);

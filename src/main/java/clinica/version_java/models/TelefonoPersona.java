@@ -26,7 +26,7 @@ public class TelefonoPersona {
     @Column(name="id_telefono_persona")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idTelefonoPersona;
-    @Column(name="telefono"  , length = 15)
+    @Column(name="telefono"  , length = 15, unique = true, nullable = false )
     private String telefono;
     @Column(name = "estado")
     @Enumerated(EnumType.STRING)
